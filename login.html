@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+</head>
+<body style="text-align:center; font-family:Arial; margin-top:100px;">
+<h2>Login</h2>
+<input id="user" placeholder="Usuario"><br><br>
+<input id="pass" type="password" placeholder="Contraseña"><br><br>
+<button onclick="login()">Entrar</button>
+<p id="error" style="color:red; display:none;">Datos incorrectos</p>
+
+<script>
+function login(){
+  let u = document.getElementById("user").value;
+  let p = document.getElementById("pass").value;
+
+  if(u==="admin" && p==="1234"){
+    window.location.href="admin.html";
+  } else if(u==="cliente" && p==="1234"){
+    window.location.href="cliente.html";
+  } else {
+    document.getElementById("error").style.display="block";
+  }
+}
+</script>
+</body>
+</html>
