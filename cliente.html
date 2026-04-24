@@ -3,9 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <title>Cliente</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f3f4f6;
+}
+
+.nav {
+  background: #2563eb;
+  color: white;
+  padding: 15px;
+  text-align: right;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.container {
+  padding: 40px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+</style>
 </head>
-<body style="text-align:center; font-family:Arial; margin-top:100px;">
-<h1>Bienvenido Cliente</h1>
-<button onclick="window.location.href='index.html'">Cerrar sesión</button>
+<body>
+
+<div class="nav">
+  <button onclick="logout()">Cerrar sesión</button>
+</div>
+
+<div class="container">
+  <h1>👤 Bienvenido Cliente</h1>
+
+  <div class="card">🌴 Viaje a Cancún</div>
+  <div class="card">🏔️ Viaje a Suiza</div>
+  <div class="card">🏙️ Viaje a Nueva York</div>
+</div>
+
+<script>
+function logout(){
+  window.location.href="index.html";
+}
+</script>
+
 </body>
 </html>
