@@ -2,55 +2,60 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>TravelGo - Explora el mundo</title>
+<title>Admin Panel</title>
 <style>
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center/cover;
+  font-family: Arial;
+  background: #1f2937;
   color: white;
 }
 
-.overlay {
-  background: rgba(0,0,0,0.6);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.box {
-  text-align: center;
-}
-
-h1 {
-  font-size: 50px;
+.nav {
+  background: #111827;
+  padding: 15px;
+  text-align: right;
 }
 
 button {
-  padding: 15px 30px;
-  font-size: 18px;
+  padding: 10px 15px;
   border: none;
-  border-radius: 5px;
-  background: #ff7a18;
+  background: #ef4444;
   color: white;
   cursor: pointer;
 }
 
-button:hover {
-  background: #e66a00;
+.container {
+  padding: 40px;
+}
+
+.card {
+  background: #374151;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 10px;
 }
 </style>
 </head>
 <body>
 
-<div class="overlay">
-  <div class="box">
-    <h1>🌍 TravelGo</h1>
-    <p>Descubre destinos increíbles alrededor del mundo</p>
-    <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
-  </div>
+<div class="nav">
+  <button onclick="logout()">Cerrar sesión</button>
 </div>
+
+<div class="container">
+  <h1>👨‍💼 Panel de Administrador</h1>
+
+  <div class="card">📊 Gestión de usuarios</div>
+  <div class="card">✈️ Gestión de vuelos</div>
+  <div class="card">💰 Reportes financieros</div>
+</div>
+
+<script>
+function logout(){
+  window.location.href="index.html";
+}
+</script>
 
 </body>
 </html>
