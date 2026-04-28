@@ -2,61 +2,272 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Cliente</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSeguro — Cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #f3f4f6;
-}
+  :root {
+    --bg: #020b18;
+    --card: #061526;
+    --accent: #00d4ff;
+    --text: #e0f0ff;
+    --muted: #4a6a8a;
+    --success: #00ff88;
+    --danger: #ff2d55;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-.nav {
-  background: #2563eb;
-  color: white;
-  padding: 15px;
-  text-align: right;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+  }
 
-button {
-  padding: 10px 15px;
-  border: none;
-  background: #ef4444;
-  color: white;
-  cursor: pointer;
-}
+  body::before {
+    content:'';
+    position:fixed; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 
-.container {
-  padding: 40px;
-}
+  nav {
+    background: rgba(5,15,31,.95);
+    border-bottom: 1px solid rgba(0,212,255,.12);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top:0; z-index:100;
+    backdrop-filter: blur(12px);
+  }
 
-.card {
-  background: white;
-  padding: 20px;
-  margin: 10px 0;
-  border-radius: 10px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-}
+  .nav-brand {
+    font-family: 'Orbitron', monospace;
+    font-size: .9rem;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--accent), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-right { display:flex; align-items:center; gap:16px; }
+
+  .nav-user {
+    font-size: .8rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    display:flex; align-items:center; gap:8px;
+  }
+  .nav-badge {
+    background: rgba(0,212,255,.1);
+    border: 1px solid rgba(0,212,255,.25);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 2px;
+  }
+
+  .btn-logout {
+    padding: 7px 20px;
+    background: transparent;
+    border: 1px solid rgba(255,45,85,.4);
+    color: var(--danger);
+    font-family: 'Orbitron', monospace;
+    font-size: .65rem;
+    letter-spacing: 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-logout:hover { background:rgba(255,45,85,.1); border-color:var(--danger); }
+
+  main { padding: 40px 32px; max-width: 900px; margin: 0 auto; }
+
+  .page-header {
+    margin-bottom: 36px;
+    animation: fadeUp .5s ease both;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  .page-header h1 { font-family:'Orbitron',monospace; font-size:1.5rem; letter-spacing:3px; margin-bottom:6px; }
+  .page-header p  { color:var(--muted); font-size:.9rem; letter-spacing:1px; }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .7rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(90deg,rgba(0,212,255,.2),transparent);
+  }
+
+  .flights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .flight-card {
+    background: var(--card);
+    border: 1px solid rgba(0,212,255,.1);
+    border-radius: 14px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all .25s;
+    animation: fadeUp .5s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  .flight-card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity:0;
+    transition: opacity .3s;
+  }
+  .flight-card:hover {
+    border-color: rgba(0,212,255,.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  }
+  .flight-card:hover::before { opacity:1; }
+  .flight-card:nth-child(1) { animation-delay:.05s }
+  .flight-card:nth-child(2) { animation-delay:.1s }
+  .flight-card:nth-child(3) { animation-delay:.15s }
+
+  .flight-emoji { font-size: 2.5rem; margin-bottom: 12px; display:block; }
+  .flight-dest { font-family:'Orbitron',monospace; font-size:1rem; letter-spacing:2px; margin-bottom:4px; }
+  .flight-route { font-size:.8rem; color:var(--muted); letter-spacing:1px; margin-bottom:16px; }
+
+  .flight-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+  .flight-meta span strong { color:var(--accent); display:block; font-size:.95rem; }
+
+  .flight-tag {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 1px;
+  }
+  .tag-available {
+    background: rgba(0,255,136,.08);
+    border: 1px solid rgba(0,255,136,.2);
+    color: var(--success);
+  }
+
+  .info-panel {
+    margin-top: 24px;
+    background: var(--card);
+    border: 1px solid rgba(0,212,255,.08);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: .82rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    animation: fadeUp .5s .3s ease both;
+  }
+  .info-panel strong { color: var(--accent); }
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <button onclick="logout()">Cerrar sesión</button>
-</div>
+<nav>
+  <div class="nav-brand">✈ AEROSEGURO</div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <span id="navUser"></span>
+      <span class="nav-badge">CLIENTE</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</nav>
 
-<div class="container">
-  <h1>👤 Bienvenido Cliente</h1>
+<main>
+  <div class="page-header">
+    <h1>👤 Portal del Cliente</h1>
+    <p>Bienvenido, <span id="welcomeUser"></span> — tus destinos disponibles</p>
+  </div>
 
-  <div class="card">🌴 Viaje a Cancún</div>
-  <div class="card">🏔️ Viaje a Suiza</div>
-  <div class="card">🏙️ Viaje a Nueva York</div>
-</div>
+  <div class="section-title">Vuelos disponibles</div>
 
+  <div class="flights">
+    <div class="flight-card">
+      <span class="flight-emoji">🌴</span>
+      <div class="flight-dest">Cancún</div>
+      <div class="flight-route">BOG → CUN</div>
+      <div class="flight-meta">
+        <span><strong>8h 20m</strong>Duración</span>
+        <span><strong>$420 USD</strong>Desde</span>
+        <span><strong>Mar, Jue, Sáb</strong>Salidas</span>
+      </div>
+      <span class="flight-tag tag-available">Disponible</span>
+    </div>
+
+    <div class="flight-card">
+      <span class="flight-emoji">🏔️</span>
+      <div class="flight-dest">Suiza</div>
+      <div class="flight-route">BOG → ZRH</div>
+      <div class="flight-meta">
+        <span><strong>13h 45m</strong>Duración</span>
+        <span><strong>$980 USD</strong>Desde</span>
+        <span><strong>Lun, Vie</strong>Salidas</span>
+      </div>
+      <span class="flight-tag tag-available">Disponible</span>
+    </div>
+
+    <div class="flight-card">
+      <span class="flight-emoji">🏙️</span>
+      <div class="flight-dest">Nueva York</div>
+      <div class="flight-route">BOG → JFK</div>
+      <div class="flight-meta">
+        <span><strong>5h 30m</strong>Duración</span>
+        <span><strong>$310 USD</strong>Desde</span>
+        <span><strong>Diario</strong>Salidas</span>
+      </div>
+      <span class="flight-tag tag-available">Disponible</span>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    🔐 Sesión activa y autenticada — <strong>token de sesión único</strong> generado al ingresar.
+    Esta página solo es accesible con credenciales válidas.
+  </div>
+</main>
+
+<script src="security.js"></script>
 <script>
-function logout(){
-  window.location.href="index.html";
-}
-</script>
+  // GUARD — si no hay sesión válida, redirige al login
+  const session = Security.requireAuth("cliente");
 
+  if (session) {
+    document.getElementById("navUser").textContent = session.user.toUpperCase();
+    document.getElementById("welcomeUser").textContent = session.user;
+  }
+
+  function doLogout() {
+    Security.logout(session ? session.user : "cliente");
+  }
+</script>
 </body>
 </html>
