@@ -2,83 +2,362 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSeguro — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #1d2b64, #f8cdda);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  :root {
+    --bg: #020b18;
+    --surface: #050f1f;
+    --accent: #00d4ff;
+    --accent2: #ff2d55;
+    --text: #e0f0ff;
+    --muted: #4a6a8a;
+    --danger: #ff2d55;
+    --success: #00ff88;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-.login-box {
-  background: white;
-  padding: 40px;
-  border-radius: 10px;
-  width: 320px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
 
-h2 {
-  text-align: center;
-}
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
+  .orb { position:fixed; border-radius:50%; filter:blur(100px); pointer-events:none; }
+  .orb1 { width:350px; height:350px; background:#00d4ff; top:-120px; left:-120px; opacity:.15; }
+  .orb2 { width:300px; height:300px; background:#ff2d55; bottom:-100px; right:-100px; opacity:.12; }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #1d2b64;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp .7s ease both;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 
-button:hover {
-  background: #0f1a4d;
-}
+  .brand {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .brand-icon { font-size:2.5rem; display:block; margin-bottom:8px; }
+  .brand h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, var(--accent), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-.error {
-  color: red;
-  display: none;
-  text-align: center;
-}
+  .card {
+    background: rgba(5,15,31,.9);
+    border: 1px solid rgba(0,212,255,.15);
+    border-radius: 16px;
+    padding: 36px 32px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: .7rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content:'';
+    flex:1;
+    height:1px;
+    background: linear-gradient(90deg, rgba(0,212,255,.3), transparent);
+  }
+
+  .field { margin-bottom: 16px; }
+
+  label {
+    display: block;
+    font-size: .78rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    padding: 13px 16px;
+    background: rgba(0,0,0,.4);
+    border: 1px solid rgba(0,212,255,.15);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,212,255,.15);
+  }
+  input::placeholder { color: var(--muted); }
+  input:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* Indicador de intentos */
+  .attempts-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .attempt-dot {
+    flex:1; height:3px; border-radius:2px;
+    background: rgba(0,212,255,.15);
+    transition: background .3s;
+  }
+  .attempt-dot.used { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), #0099bb);
+    color: #020b18;
+    font-family: 'Orbitron', monospace;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all .25s;
+    box-shadow: 0 0 30px rgba(0,212,255,.25);
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 0 50px rgba(0,212,255,.5);
+  }
+  .btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .msg {
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: .88rem;
+    letter-spacing: 1px;
+    display: none;
+    font-weight: 600;
+  }
+  .msg.error {
+    background: rgba(255,45,85,.1);
+    border: 1px solid rgba(255,45,85,.3);
+    color: var(--danger);
+    display: block;
+  }
+  .msg.lock {
+    background: rgba(255,140,0,.1);
+    border: 1px solid rgba(255,140,0,.3);
+    color: #ffaa00;
+    display: block;
+  }
+  .msg.info {
+    background: rgba(0,212,255,.07);
+    border: 1px solid rgba(0,212,255,.2);
+    color: var(--accent);
+    display: block;
+  }
+
+  .back {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: .8rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 2px;
+    transition: color .2s;
+  }
+  .back:hover { color: var(--accent); }
+
+  /* Credenciales demo */
+  .demo-hint {
+    margin-top: 20px;
+    padding: 12px 14px;
+    background: rgba(0,255,136,.04);
+    border: 1px solid rgba(0,255,136,.1);
+    border-radius: 8px;
+    font-size: .78rem;
+    color: rgba(0,255,136,.6);
+    letter-spacing: 1px;
+  }
+  .demo-hint strong { color: rgba(0,255,136,.9); }
 </style>
 </head>
 <body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
 
-<div class="login-box">
-  <h2>Iniciar Sesión</h2>
-  <input id="user" placeholder="Usuario">
-  <input id="pass" type="password" placeholder="Contraseña">
-  <button onclick="login()">Entrar</button>
-  <p class="error" id="error">Credenciales incorrectas</p>
-</div>
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-icon">🔐</span>
+      <h1>AeroSeguro</h1>
+    </div>
 
+    <div class="card">
+      <div class="section-title">Autenticación</div>
+
+      <div class="field">
+        <label>Usuario</label>
+        <input id="user" type="text" placeholder="Ingresa tu usuario" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <div class="attempts-bar" id="attemptsBar">
+        <div class="attempt-dot" id="d1"></div>
+        <div class="attempt-dot" id="d2"></div>
+        <div class="attempt-dot" id="d3"></div>
+        <div class="attempt-dot" id="d4"></div>
+      </div>
+
+      <button class="btn" id="loginBtn" onclick="doLogin()">Acceder</button>
+
+      <div class="msg" id="msg"></div>
+
+      <div class="demo-hint">
+        🧪 Demo — <strong>admin</strong> / admin123 &nbsp;|&nbsp; <strong>cliente</strong> / cliente123
+      </div>
+    </div>
+
+    <a href="index.html" class="back">← Volver al portal</a>
+  </div>
+
+<script src="security.js"></script>
 <script>
-function login(){
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+  const btn = document.getElementById("loginBtn");
+  const msgEl = document.getElementById("msg");
 
-  if(u==="admin" && p==="1234"){
-    window.location.href="admin.html";
-  } else if(u==="cliente" && p==="1234"){
-    window.location.href="cliente.html";
-  } else {
-    document.getElementById("error").style.display="block";
+  function showMsg(text, type) {
+    msgEl.textContent = text;
+    msgEl.className = "msg " + type;
   }
-}
-</script>
 
+  function updateDots(used) {
+    for (let i = 1; i <= 4; i++) {
+      const d = document.getElementById("d" + i);
+      d.className = "attempt-dot" + (i <= used ? " used" : "");
+    }
+  }
+
+  // Al cargar: verificar si ya está logueado
+  window.addEventListener("load", () => {
+    if (Security.getSession()) {
+      const role = Security.getSession().role;
+      window.location.href = role === "admin" ? "admin.html" : "cliente.html";
+    }
+    // Mostrar si hay bloqueo activo
+    checkLockoutOnLoad();
+  });
+
+  function checkLockoutOnLoad() {
+    const data = JSON.parse(sessionStorage.getItem("rate_data") || '{}');
+    if (data.lockoutUntil && Date.now() < data.lockoutUntil) {
+      const secs = Math.ceil((data.lockoutUntil - Date.now()) / 1000);
+      setLockState(secs);
+    }
+  }
+
+  let lockTimer = null;
+  function setLockState(secs) {
+    btn.disabled = true;
+    document.getElementById("user").disabled = true;
+    document.getElementById("pass").disabled = true;
+    updateDots(4);
+
+    let remaining = secs;
+    showMsg(`⛔ Bloqueado por ${remaining}s — demasiados intentos fallidos`, "lock");
+
+    clearInterval(lockTimer);
+    lockTimer = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(lockTimer);
+        btn.disabled = false;
+        document.getElementById("user").disabled = false;
+        document.getElementById("pass").disabled = false;
+        msgEl.className = "msg";
+        updateDots(0);
+      } else {
+        showMsg(`⛔ Bloqueado por ${remaining}s — demasiados intentos fallidos`, "lock");
+      }
+    }, 1000);
+  }
+
+  async function doLogin() {
+    const u = document.getElementById("user").value.trim();
+    const p = document.getElementById("pass").value;
+
+    if (!u || !p) {
+      showMsg("⚠️ Completa todos los campos", "error");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Verificando...";
+
+    const result = await Security.attemptLogin(u, p);
+
+    btn.textContent = "Acceder";
+
+    if (result.ok) {
+      showMsg("✅ Acceso concedido. Redirigiendo...", "info");
+      updateDots(0);
+      setTimeout(() => {
+        window.location.href = result.role === "admin" ? "admin.html" : "cliente.html";
+      }, 800);
+    } else if (result.reason === "lockout") {
+      setLockState(result.secsLeft);
+    } else {
+      const used = Security.MAX_ATTEMPTS - result.attemptsLeft;
+      updateDots(used);
+      showMsg(`❌ Credenciales incorrectas — ${result.attemptsLeft} intento(s) restante(s)`, "error");
+      btn.disabled = false;
+    }
+  }
+
+  // Enter para login
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !btn.disabled) doLogin();
+  });
+</script>
 </body>
 </html>

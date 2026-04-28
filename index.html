@@ -2,55 +2,194 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>TravelGo - Explora el mundo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSeguro — Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center/cover;
-  color: white;
-}
+  :root {
+    --bg: #020b18;
+    --surface: #050f1f;
+    --accent: #00d4ff;
+    --accent2: #ff2d55;
+    --text: #e0f0ff;
+    --muted: #4a6a8a;
+    --grid: rgba(0,212,255,0.04);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-.overlay {
-  background: rgba(0,0,0,0.6);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
 
-.box {
-  text-align: center;
-}
+  /* Grid background */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove { from{background-position:0 0} to{background-position:40px 40px} }
 
-h1 {
-  font-size: 50px;
-}
+  /* Glow orbs */
+  .orb {
+    position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; opacity:.25;
+  }
+  .orb1 { width:400px; height:400px; background:#00d4ff; top:-100px; left:-100px; animation:float1 8s ease-in-out infinite; }
+  .orb2 { width:300px; height:300px; background:#ff2d55; bottom:-80px; right:-80px; animation:float2 10s ease-in-out infinite; }
+  @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
+  @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-20px)} }
 
-button {
-  padding: 15px 30px;
-  font-size: 18px;
-  border: none;
-  border-radius: 5px;
-  background: #ff7a18;
-  color: white;
-  cursor: pointer;
-}
+  .logo-wrap {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown .8s ease both;
+  }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
 
-button:hover {
-  background: #e66a00;
-}
+  .logo-icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px var(--accent));
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{filter:drop-shadow(0 0 20px var(--accent))} 50%{filter:drop-shadow(0 0 40px var(--accent))} }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent), #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    font-size: 1.1rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 8px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .card {
+    background: rgba(5,15,31,.85);
+    border: 1px solid rgba(0,212,255,.2);
+    border-radius: 16px;
+    padding: 40px 48px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 60px rgba(0,212,255,.08), inset 0 1px 0 rgba(255,255,255,.05);
+    animation: fadeUp .9s .2s ease both;
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+  .card p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 14px 48px;
+    background: linear-gradient(135deg, var(--accent), #0099bb);
+    color: #020b18;
+    font-family: 'Orbitron', monospace;
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-decoration: none;
+    border-radius: 8px;
+    text-transform: uppercase;
+    transition: all .25s;
+    box-shadow: 0 0 30px rgba(0,212,255,.3);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,212,255,.6);
+  }
+
+  .status {
+    margin-top: 24px;
+    font-size: .8rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #00ff88;
+    animation: blink 2s infinite;
+    box-shadow: 0 0 8px #00ff88;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .corner {
+    position: fixed;
+    font-family: 'Orbitron', monospace;
+    font-size: .65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    opacity: .4;
+  }
+  .corner.tl { top:20px; left:20px; }
+  .corner.tr { top:20px; right:20px; }
+  .corner.bl { bottom:20px; left:20px; }
+  .corner.br { bottom:20px; right:20px; }
 </style>
 </head>
 <body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="corner tl">SYS:ONLINE</div>
+  <div class="corner tr" id="clock"></div>
+  <div class="corner bl">v2.0.1 — BLUE TEAM</div>
+  <div class="corner br">SECURE PORTAL</div>
 
-<div class="overlay">
-  <div class="box">
-    <h1>🌍 TravelGo</h1>
-    <p>Descubre destinos increíbles alrededor del mundo</p>
-    <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
+  <div class="logo-wrap">
+    <span class="logo-icon">✈️</span>
+    <h1>AeroSeguro</h1>
+    <p class="tagline">Sistema de gestión de vuelos</p>
   </div>
-</div>
 
+  <div class="card">
+    <p>Acceso restringido a personal autorizado</p>
+    <a href="login.html" class="btn">Iniciar sesión</a>
+    <div class="status">
+      <div class="dot"></div>
+      SISTEMA OPERATIVO
+    </div>
+  </div>
+
+  <script>
+    function tick() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString("es-CO");
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
 </body>
 </html>
