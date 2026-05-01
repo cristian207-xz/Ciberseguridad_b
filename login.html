@@ -1,85 +1,225 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #1d2b64, #f8cdda);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-box {
-  background: white;
-  padding: 40px;
-  border-radius: 10px;
-  width: 320px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-h2 {
-  text-align: center;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: #1d2b64;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #0f1a4d;
-}
-
-.error {
-  color: red;
-  display: none;
-  text-align: center;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSeguro – Login</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1d2b64, #f8cdda);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      width: 340px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h2 { text-align: center; margin-bottom: 8px; color: #1d2b64; }
+    .subtitle { text-align: center; font-size: 12px; color: #888; margin-bottom: 24px; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    input:disabled { background: #f0f0f0; cursor: not-allowed; }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #1d2b64;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+    button:hover:not(:disabled) { background: #0f1a4d; }
+    button:disabled { background: #999; cursor: not-allowed; }
+    .error {
+      color: #c0392b;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+      display: none;
+    }
+    .lockout {
+      color: #e67e22;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+      display: none;
+    }
+    .intentos {
+      font-size: 12px;
+      color: #aaa;
+      text-align: center;
+      margin-top: 6px;
+    }
+  </style>
 </head>
 <body>
-
 <div class="login-box">
-  <h2>Iniciar Sesión</h2>
-  <input id="user" placeholder="Usuario">
+  <h2>✈️ AeroSeguro</h2>
+  <p class="subtitle">Sistema de autenticación seguro</p>
+
+  <input id="user" placeholder="Usuario" autocomplete="off">
   <input id="pass" type="password" placeholder="Contraseña">
-  <button onclick="login()">Entrar</button>
-  <p class="error" id="error">Credenciales incorrectas</p>
+  <button id="btnLogin" onclick="handleLogin()">Entrar</button>
+
+  <p class="error" id="error">❌ Credenciales incorrectas</p>
+  <p class="lockout" id="lockout">🔒 Demasiados intentos. Espera <span id="countdown">30</span>s</p>
+  <p class="intentos" id="intentos"></p>
 </div>
 
 <script>
-function login(){
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+  // ─── USUARIOS (hash SHA-256 de la contraseña) ───────────────────────────
+  // admin123  → hash generado con SHA-256
+  // cliente123 → hash generado con SHA-256
+  const USERS = {
+    admin:   { hash: null, role: 'admin',   redirect: 'admin.html' },
+    cliente: { hash: null, role: 'cliente', redirect: 'cliente.html' }
+  };
 
-  if(u==="admin" && p==="1234"){
-    window.location.href="admin.html";
-  } else if(u==="cliente" && p==="1234"){
-    window.location.href="cliente.html";
-  } else {
-    document.getElementById("error").style.display="block";
+  // Precalcular hashes al cargar la página
+  async function initHashes() {
+    USERS.admin.hash   = await sha256('admin123');
+    USERS.cliente.hash = await sha256('cliente123');
   }
-}
-</script>
 
+  // ─── SHA-256 con Web Crypto API (nativa del navegador) ──────────────────
+  async function sha256(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ─── RATE LIMITING ──────────────────────────────────────────────────────
+  const MAX_INTENTOS = 4;
+  const LOCKOUT_SEGUNDOS = 30;
+  let intentosFallidos = 0;
+  let bloqueado = false;
+
+  function registrarFallo() {
+    intentosFallidos++;
+    const restantes = MAX_INTENTOS - intentosFallidos;
+
+    if (intentosFallidos >= MAX_INTENTOS) {
+      activarBloqueo();
+    } else {
+      document.getElementById('intentos').textContent =
+        `Intentos restantes: ${restantes}`;
+    }
+  }
+
+  function activarBloqueo() {
+    bloqueado = true;
+    let segundos = LOCKOUT_SEGUNDOS;
+
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('lockout').style.display = 'block';
+    document.getElementById('countdown').textContent = segundos;
+    document.getElementById('btnLogin').disabled = true;
+    document.getElementById('user').disabled = true;
+    document.getElementById('pass').disabled = true;
+    document.getElementById('intentos').textContent = '';
+
+    registrarLog('LOCKOUT', document.getElementById('user').value || 'desconocido');
+
+    const timer = setInterval(() => {
+      segundos--;
+      document.getElementById('countdown').textContent = segundos;
+      if (segundos <= 0) {
+        clearInterval(timer);
+        desbloquear();
+      }
+    }, 1000);
+  }
+
+  function desbloquear() {
+    bloqueado = false;
+    intentosFallidos = 0;
+    document.getElementById('lockout').style.display = 'none';
+    document.getElementById('btnLogin').disabled = false;
+    document.getElementById('user').disabled = false;
+    document.getElementById('pass').disabled = false;
+    document.getElementById('pass').value = '';
+  }
+
+  // ─── LOGS DE SEGURIDAD ──────────────────────────────────────────────────
+  function registrarLog(evento, usuario) {
+    const logs = JSON.parse(sessionStorage.getItem('security_log') || '[]');
+    logs.push({
+      evento,
+      usuario,
+      timestamp: new Date().toISOString()
+    });
+    sessionStorage.setItem('security_log', JSON.stringify(logs));
+    console.log(`[${evento}] Usuario: ${usuario} | ${new Date().toISOString()}`);
+  }
+
+  // ─── LOGIN PRINCIPAL ─────────────────────────────────────────────────────
+  async function handleLogin() {
+    if (bloqueado) return;
+
+    const username = document.getElementById('user').value.trim();
+    const password = document.getElementById('pass').value;
+
+    // Validar inputs
+    if (!username || !password) {
+      mostrarError();
+      return;
+    }
+
+    // Hashear contraseña ingresada
+    const passwordHash = await sha256(password);
+
+    // Verificar usuario y hash
+    const user = USERS[username];
+
+    if (!user || passwordHash !== user.hash) {
+      mostrarError();
+      registrarLog('LOGIN_FAIL', username);
+      registrarFallo();
+      return;
+    }
+
+    // LOGIN EXITOSO
+    const token = crypto.randomUUID();
+    sessionStorage.setItem('sessionToken', token);
+    sessionStorage.setItem('userRole', user.role);
+    sessionStorage.setItem('username', username);
+
+    registrarLog('LOGIN_OK', username);
+
+    window.location.href = user.redirect;
+  }
+
+  function mostrarError() {
+    document.getElementById('error').style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('error').style.display = 'none';
+    }, 3000);
+  }
+
+  // Permitir Enter para hacer login
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  // Inicializar hashes al cargar
+  initHashes();
+</script>
 </body>
 </html>
