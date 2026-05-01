@@ -1,57 +1,241 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TravelGo - explora el mundo</title>
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center/cover;
-  color: white;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSeguro – Explora el mundo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.overlay {
-  background: rgba(0,0,0,0.6);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80')
+                  no-repeat center/cover fixed;
+      color: white;
+      min-height: 100vh;
+    }
 
-.box {
-  text-align: center;
-}
+    .overlay {
+      background: rgba(0, 0, 0, 0.62);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-h1 {
-  font-size: 50px;
-}
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+    }
+    .logo { font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+    .logo span { color: #fb923c; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: white; }
+    .btn-nav {
+      padding: 9px 20px;
+      background: #fb923c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: #ea580c; }
 
-button {
-  padding: 15px 30px;
-  font-size: 18px;
-  border: none;
-  border-radius: 5px;
-  background: #ff7a18;
-  color: white;
-  cursor: pointer;
-}
+    /* ── HERO ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .hero-badge {
+      background: rgba(251,146,60,0.2);
+      border: 1px solid #fb923c;
+      color: #fb923c;
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .hero h1 span { color: #fb923c; }
+    .hero p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.85);
+      max-width: 520px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+    .btn-hero {
+      padding: 16px 40px;
+      font-size: 17px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background: #fb923c;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 4px 20px rgba(251,146,60,0.5);
+    }
+    .btn-hero:hover { background: #ea580c; transform: translateY(-2px); }
 
-button:hover {
-  background: #e66a00;
-}
-</style>
+    /* ── DEFENSAS BADGE ── */
+    .defensas {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 28px;
+    }
+    .defensa-tag {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── DESTINOS ── */
+    .destinos {
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+      padding: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .destinos h2 {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 24px;
+      color: rgba(255,255,255,0.9);
+    }
+    .destinos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .destino-card {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .destino-card:hover {
+      background: rgba(255,255,255,0.18);
+      transform: translateY(-3px);
+    }
+    .destino-card .icon { font-size: 30px; margin-bottom: 8px; }
+    .destino-card h3 { font-size: 15px; margin-bottom: 4px; }
+    .destino-card p { font-size: 12px; color: rgba(255,255,255,0.65); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 16px;
+      background: rgba(0,0,0,0.4);
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+  </style>
 </head>
 <body>
-
 <div class="overlay">
-  <div class="box">
-    <h1>🌍 TravelGo</h1>
-    <p>Descubre destinos increíbles alrededor del mundo</p>
-    <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
-  </div>
-</div>
 
+  <!-- NAV -->
+  <nav>
+    <div class="logo">✈️ Aero<span>Seguro</span></div>
+    <div class="nav-links">
+      <a href="#">Destinos</a>
+      <a href="#">Ofertas</a>
+      <a href="#">Nosotros</a>
+      <button class="btn-nav" onclick="window.location.href='login.html'">
+        Iniciar Sesión
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🛡️ Sistema seguro — Blue Team activo</div>
+    <h1>Viaja con<br><span>confianza</span></h1>
+    <p>Descubre destinos increíbles alrededor del mundo con la seguridad que mereces.</p>
+    <button class="btn-hero" onclick="window.location.href='login.html'">
+      🚀 Acceder al portal
+    </button>
+
+    <div class="defensas">
+      <span class="defensa-tag">🔐 SHA-256</span>
+      <span class="defensa-tag">🚫 Rate Limiting</span>
+      <span class="defensa-tag">🪪 Token de sesión</span>
+      <span class="defensa-tag">👥 RBAC</span>
+      <span class="defensa-tag">📋 Logs de seguridad</span>
+    </div>
+  </div>
+
+  <!-- DESTINOS -->
+  <div class="destinos">
+    <h2>✈️ Destinos populares</h2>
+    <div class="destinos-grid">
+      <div class="destino-card" onclick="window.location.href='login.html'">
+        <div class="icon">🌴</div>
+        <h3>Cancún</h3>
+        <p>México · Playas paradisíacas</p>
+      </div>
+      <div class="destino-card" onclick="window.location.href='login.html'">
+        <div class="icon">🏔️</div>
+        <h3>Suiza</h3>
+        <p>Europa · Alpes y naturaleza</p>
+      </div>
+      <div class="destino-card" onclick="window.location.href='login.html'">
+        <div class="icon">🏙️</div>
+        <h3>Nueva York</h3>
+        <p>USA · La ciudad que nunca duerme</p>
+      </div>
+      <div class="destino-card" onclick="window.location.href='login.html'">
+        <div class="icon">🗼</div>
+        <h3>París</h3>
+        <p>Francia · Romance y arte</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    © 2026 AeroSeguro · Ejercicio Red Team vs Blue Team · Ciberseguridad 2026-1
+  </footer>
+
+</div>
 </body>
 </html>
