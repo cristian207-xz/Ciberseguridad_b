@@ -1,63 +1,193 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cliente</title>
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #f3f4f6;
-}
-
-.nav {
-  background: #2563eb;
-  color: white;
-  padding: 15px;
-  text-align: right;
-}
-
-button {
-  padding: 10px 15px;
-  border: none;
-  background: #ef4444;
-  color: white;
-  cursor: pointer;
-}
-
-.container {
-  padding: 40px;
-}
-
-.card {
-  background: white;
-  padding: 20px;
-  margin: 10px 0;
-  border-radius: 10px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSeguro – Portal Cliente</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      min-height: 100vh;
+    }
+    .nav {
+      background: #2563eb;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #1d4ed8;
+    }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-left span { font-size: 20px; font-weight: bold; }
+    .badge {
+      background: #1d4ed8;
+      color: white;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      border: 1px solid #93c5fd;
+    }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .user-info { font-size: 13px; color: #bfdbfe; }
+    .user-info strong { color: white; }
+    .btn-logout {
+      padding: 8px 16px;
+      border: none;
+      background: #ef4444;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .btn-logout:hover { background: #dc2626; }
+    .container { padding: 40px 30px; max-width: 900px; margin: 0 auto; }
+    .welcome {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .welcome h1 { font-size: 24px; color: #1f2937; margin-bottom: 6px; }
+    .welcome p { color: #6b7280; font-size: 14px; }
+    .session-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      margin-bottom: 30px;
+      color: #1d4ed8;
+    }
+    .session-info span { font-weight: bold; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-top: 4px solid #2563eb;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .card .icon { font-size: 32px; margin-bottom: 12px; }
+    .card h3 { font-size: 16px; color: #1f2937; margin-bottom: 6px; }
+    .card p { font-size: 12px; color: #6b7280; }
+    .card .precio {
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+  </style>
 </head>
 <body>
 
 <div class="nav">
-  <button onclick="logout()">Cerrar sesión</button>
+  <div class="nav-left">
+    <span>✈️ AeroSeguro</span>
+    <span class="badge">CLIENTE</span>
+  </div>
+  <div class="nav-right">
+    <span class="user-info">Hola, <strong id="navUser">-</strong></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
 </div>
 
 <div class="container">
-  <h1>👤 Bienvenido Cliente</h1>
+  <div class="welcome">
+    <h1>👤 Portal del Cliente</h1>
+    <p>Explora nuestros destinos disponibles</p>
+  </div>
 
-  <div class="card">🌴 Viaje a Cancún</div>
-  <div class="card">🏔️ Viaje a Suiza</div>
-  <div class="card">🏙️ Viaje a Nueva York</div>
+  <div class="session-info">
+    🔐 Sesión activa · Token: <span id="tokenPreview">-</span> · Usuario: <span id="sessionUser">-</span> · Rol: <span id="sessionRole">-</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="icon">🌴</div>
+      <h3>Cancún, México</h3>
+      <p>Playas paradisíacas y cultura maya</p>
+      <div class="precio">$850 USD</div>
+    </div>
+    <div class="card">
+      <div class="icon">🏔️</div>
+      <h3>Suiza</h3>
+      <p>Alpes, chocolate y relojes de lujo</p>
+      <div class="precio">$1,200 USD</div>
+    </div>
+    <div class="card">
+      <div class="icon">🏙️</div>
+      <h3>Nueva York, USA</h3>
+      <p>La ciudad que nunca duerme</p>
+      <div class="precio">$980 USD</div>
+    </div>
+    <div class="card">
+      <div class="icon">🗼</div>
+      <h3>París, Francia</h3>
+      <p>Romance, gastronomía y arte</p>
+      <div class="precio">$1,100 USD</div>
+    </div>
+  </div>
 </div>
 
 <script>
-function logout(){
-  window.location.href="index.html";
-}
-</script>
+  // ─── GUARD DE SESIÓN ─────────────────────────────────────────────────────
+  (function() {
+    const token = sessionStorage.getItem('sessionToken');
+    const role  = sessionStorage.getItem('userRole');
 
+    if (!token || role !== 'cliente') {
+      try {
+        const logs = JSON.parse(sessionStorage.getItem('security_log') || '[]');
+        logs.push({
+          evento: 'ACCESS_DENIED',
+          usuario: 'desconocido',
+          pagina: 'cliente.html',
+          timestamp: new Date().toISOString()
+        });
+        sessionStorage.setItem('security_log', JSON.stringify(logs));
+      } catch(e) {}
+
+      window.location.href = 'login.html';
+    }
+  })();
+
+  // ─── MOSTRAR DATOS DE SESIÓN ─────────────────────────────────────────────
+  const token    = sessionStorage.getItem('sessionToken');
+  const username = sessionStorage.getItem('username');
+  const role     = sessionStorage.getItem('userRole');
+
+  document.getElementById('navUser').textContent      = username || '-';
+  document.getElementById('sessionUser').textContent  = username || '-';
+  document.getElementById('sessionRole').textContent  = role     || '-';
+  document.getElementById('tokenPreview').textContent = token ? token.substring(0, 18) + '...' : '-';
+
+  // ─── LOGOUT ──────────────────────────────────────────────────────────────
+  function logout() {
+    const logs = JSON.parse(sessionStorage.getItem('security_log') || '[]');
+    logs.push({
+      evento: 'LOGOUT',
+      usuario: username,
+      timestamp: new Date().toISOString()
+    });
+    sessionStorage.setItem('security_log', JSON.stringify(logs));
+    sessionStorage.removeItem('sessionToken');
+    sessionStorage.removeItem('userRole');
+    sessionStorage.removeItem('username');
+    window.location.href = 'login.html';
+  }
+</script>
 </body>
 </html>
