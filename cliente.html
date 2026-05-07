@@ -54,6 +54,29 @@ button {
 </div>
 
 <script>
+  // Guard de sesión con JWT
+async function checkAuth(requiredRole) {
+  const token = sessionStorage.getItem("token");
+  if (!token) { window.location.href = "login.html"; return; }
+
+  const res = await fetch("/api/verify", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  if (!res.ok) { 
+    sessionStorage.clear();
+    window.location.href = "login.html"; 
+    return; 
+  }
+
+  const data = await res.json();
+  if (data.user.role !== requiredRole) {
+    window.location.href = "login.html";
+  }
+}
+
+checkAuth("admin"); // En admin.html
+// checkAuth("cliente"); // En cliente.html
 function logout(){
   window.location.href="index.html";
 }
