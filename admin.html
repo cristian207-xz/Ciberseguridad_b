@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -86,6 +84,7 @@
       border-radius: 10px;
       padding: 20px;
       border: 1px solid #374151;
+      margin-bottom: 16px;
     }
     .logs-section h3 {
       font-size: 14px;
@@ -101,6 +100,8 @@
       border-bottom: 1px solid #1f2937;
       display: flex;
       gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
     }
     .log-entry:last-child { border-bottom: none; }
     .log-ok { color: #34d399; }
@@ -108,6 +109,10 @@
     .log-warn { color: #fbbf24; }
     .log-time { color: #6b7280; }
     .no-logs { color: #6b7280; font-size: 13px; font-style: italic; }
+    .ip-bloqueada { color: #fbbf24; font-weight: bold; }
+    .ip-activa { color: #34d399; }
+    .ip-address { color: #60a5fa; font-weight: bold; }
+    .ip-eventos { font-size: 11px; color: #6b7280; margin-left: auto; }
   </style>
 </head>
 <body>
@@ -156,18 +161,23 @@
     </div>
   </div>
 
+  <!-- SECURITY LOG -->
   <div class="logs-section">
     <h3>📋 Registro de seguridad (Security Log)</h3>
     <div id="logsContainer"><p class="no-logs">Sin eventos registrados.</p></div>
   </div>
+
+  <!-- MAPA DE IPs ATACANTES -->
+  <div class="logs-section">
+    <h3>🌐 Mapa de IPs atacantes</h3>
+    <div id="ipsContainer"><p class="no-logs">Sin IPs registradas.</p></div>
+  </div>
 </div>
+
 <script>
 async function checkAuth() {
   const token = sessionStorage.getItem('token');
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
+  if (!token) { window.location.href = 'login.html'; return; }
 
   const res = await fetch('/api/verify', {
     headers: { 'Authorization': 'Bearer ' + token }
@@ -180,15 +190,11 @@ async function checkAuth() {
   }
 
   const data = await res.json();
+  if (data.user.role !== 'admin') { window.location.href = 'login.html'; return; }
 
-  if (data.user.role !== 'admin') {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  document.getElementById('navUser').textContent      = data.user.username;
-  document.getElementById('sessionUser').textContent  = data.user.username;
-  document.getElementById('sessionRole').textContent  = data.user.role;
+  document.getElementById('navUser').textContent     = data.user.username;
+  document.getElementById('sessionUser').textContent = data.user.username;
+  document.getElementById('sessionRole').textContent = data.user.role;
   document.getElementById('tokenPreview').textContent = token.substring(0, 18) + '...';
 }
 
@@ -197,6 +203,7 @@ function logout() {
   fetch('/api/logout', { method: 'POST' });
   window.location.href = 'login.html';
 }
+
 async function fetchLogs() {
   const token = sessionStorage.getItem('token');
   try {
@@ -229,10 +236,50 @@ async function fetchLogs() {
   }
 }
 
-// Actualiza logs cada 10 segundos
-fetchLogs();
-setInterval(fetchLogs, 10000);
+async function fetchIPs() {
+  const token = sessionStorage.getItem('token');
+  try {
+    const res = await fetch('/api/logs', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    const container = document.getElementById('ipsContainer');
+
+    if (!data.logs || data.logs.length === 0) {
+      container.innerHTML = '<p class="no-logs">Sin IPs registradas.</p>';
+      return;
+    }
+
+    // Agrupar eventos por IP
+    const ipMap = {};
+    data.logs.forEach(log => {
+      if (!ipMap[log.ip]) ipMap[log.ip] = { intentos: 0, bloqueada: false, eventos: [] };
+      ipMap[log.ip].intentos++;
+      if (log.evento.includes('LOCKOUT')) ipMap[log.ip].bloqueada = true;
+      ipMap[log.ip].eventos.push(log.evento);
+    });
+
+    container.innerHTML = Object.entries(ipMap).map(([ip, info]) => `
+      <div class="log-entry">
+        <span class="ip-address">📍 ${ip}</span>
+        <span class="log-time">Intentos: ${info.intentos}</span>
+        <span class="${info.bloqueada ? 'ip-bloqueada' : 'ip-activa'}">
+          ${info.bloqueada ? '🔒 BLOQUEADA' : '✅ Activa'}
+        </span>
+        <span class="ip-eventos">${[...new Set(info.eventos)].join(', ')}</span>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    console.error('Error cargando IPs:', e);
+  }
+}
+
 checkAuth();
+fetchLogs();
+fetchIPs();
+setInterval(fetchLogs, 10000);
+setInterval(fetchIPs, 10000);
 </script>
 </body>
 </html>
