@@ -2,7 +2,7 @@
   "name": "ciberseguridad_b",
   "version": "1.0.0",
   "description": "**Clase de Ciberseguridad** · Sistema de login con defensas implementadas",
-  "main": "Security.js",
+  "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
