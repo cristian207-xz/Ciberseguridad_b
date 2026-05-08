@@ -7,11 +7,8 @@ const attempts = {};
 const BLOCK_TIME = 30 * 1000; // 30 segundos
 const MAX_ATTEMPTS = 4;
 
-function log(type, ip, extra = '') {
-  const ts = new Date().toISOString();
-  console.log(`[${ts}] ${type} | IP: ${ip} | ${extra}`);
-}
-
+const logger = require('../lib/logger');
+const log = logger.log;
 module.exports = async (req, res) => {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');

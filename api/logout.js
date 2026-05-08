@@ -1,7 +1,5 @@
-function log(type, ip, extra = '') {
-  const ts = new Date().toISOString();
-  console.log(`[${ts}] ${type} | IP: ${ip} | ${extra}`);
-}
+const logger = require('../lib/logger');
+const log = logger.log;
 
 module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
