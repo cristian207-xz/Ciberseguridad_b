@@ -4,25 +4,21 @@ const { generateToken } = require('../lib/auth');
 const { log } = require('../lib/logger');
 
 const attempts = {};
-const requestCount = {}; // Para detectar exfiltración
+const requestCount = {};
 const BLOCK_TIME = 30 * 1000;
 const MAX_ATTEMPTS = 4;
-const EXFILTRATION_LIMIT = 20; // Más de 20 peticiones por minuto = sospechoso
+const EXFILTRATION_LIMIT = 20;
 const EXFILTRATION_WINDOW = 60 * 1000;
 
-function checkExfiltration(ip) {
+async function checkExfiltration(ip) {
   const now = Date.now();
   if (!requestCount[ip]) requestCount[ip] = { count: 0, windowStart: now };
-
-  // Resetear ventana si pasó más de 1 minuto
   if (now - requestCount[ip].windowStart > EXFILTRATION_WINDOW) {
     requestCount[ip] = { count: 0, windowStart: now };
   }
-
   requestCount[ip].count++;
-
   if (requestCount[ip].count > EXFILTRATION_LIMIT) {
-    log('EXFILTRATION_ATTEMPT', ip, `peticiones en 1 min: ${requestCount[ip].count} — comportamiento anómalo detectado`);
+    await log('EXFILTRATION_ATTEMPT', ip, `peticiones en 1 min: ${requestCount[ip].count} — comportamiento anómalo detectado`);
     return true;
   }
   return false;
@@ -38,8 +34,7 @@ module.exports = async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
   const { username, password } = req.body;
 
-  // Detección de exfiltración / comportamiento anómalo
-  checkExfiltration(ip);
+  await checkExfiltration(ip);
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
@@ -47,10 +42,9 @@ module.exports = async (req, res) => {
 
   const now = Date.now();
 
-  // Verificar bloqueo por IP
   if (attempts[ip]?.blocked) {
     if (now - attempts[ip].blockedAt < BLOCK_TIME) {
-      log('LOCKOUT_BLOCKED', ip, `user: ${username}`);
+      await log('LOCKOUT_BLOCKED', ip, `user: ${username}`);
       const remaining = Math.ceil((BLOCK_TIME - (now - attempts[ip].blockedAt)) / 1000);
       return res.status(429).json({ error: `IP bloqueada. Espera ${remaining} segundos.` });
     } else {
@@ -62,11 +56,11 @@ module.exports = async (req, res) => {
   if (!user) {
     attempts[ip] = attempts[ip] || { count: 0 };
     attempts[ip].count++;
-    log('LOGIN_FAIL', ip, `user: ${username} | motivo: usuario no existe`);
+    await log('LOGIN_FAIL', ip, `user: ${username} | motivo: usuario no existe`);
     if (attempts[ip].count >= MAX_ATTEMPTS) {
       attempts[ip].blocked = true;
       attempts[ip].blockedAt = now;
-      log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
+      await log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
       return res.status(429).json({ error: 'IP bloqueada. Espera 30 segundos.' });
     }
     return res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -76,11 +70,11 @@ module.exports = async (req, res) => {
   if (!valid) {
     attempts[ip] = attempts[ip] || { count: 0 };
     attempts[ip].count++;
-    log('LOGIN_FAIL', ip, `user: ${username} | motivo: contraseña incorrecta`);
+    await log('LOGIN_FAIL', ip, `user: ${username} | motivo: contraseña incorrecta`);
     if (attempts[ip].count >= MAX_ATTEMPTS) {
       attempts[ip].blocked = true;
       attempts[ip].blockedAt = now;
-      log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
+      await log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
       return res.status(429).json({ error: 'IP bloqueada. Espera 30 segundos.' });
     }
     return res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -88,6 +82,6 @@ module.exports = async (req, res) => {
 
   attempts[ip] = { count: 0, blocked: false };
   const token = generateToken(user);
-  log('LOGIN_OK', ip, `user: ${username} | role: ${user.role}`);
+  await log('LOGIN_OK', ip, `user: ${username} | role: ${user.role}`);
   return res.status(200).json({ token, role: user.role, username: user.username });
 };
