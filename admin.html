@@ -92,6 +92,9 @@
       margin-bottom: 14px;
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .log-entry {
       font-family: monospace;
@@ -107,12 +110,23 @@
     .log-ok { color: #34d399; }
     .log-fail { color: #f87171; }
     .log-warn { color: #fbbf24; }
+    .log-alert { color: #f97316; font-weight: bold; }
     .log-time { color: #6b7280; }
     .no-logs { color: #6b7280; font-size: 13px; font-style: italic; }
     .ip-bloqueada { color: #fbbf24; font-weight: bold; }
     .ip-activa { color: #34d399; }
     .ip-address { color: #60a5fa; font-weight: bold; }
     .ip-eventos { font-size: 11px; color: #6b7280; margin-left: auto; }
+    .btn-clear {
+      padding: 4px 12px;
+      font-size: 11px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-clear:hover { background: #dc2626; }
   </style>
 </head>
 <body>
@@ -163,7 +177,10 @@
 
   <!-- SECURITY LOG -->
   <div class="logs-section">
-    <h3>📋 Registro de seguridad (Security Log)</h3>
+    <h3>
+      📋 Registro de seguridad (Security Log)
+      <button class="btn-clear" onclick="clearLogs()">🗑️ Limpiar logs</button>
+    </h3>
     <div id="logsContainer"><p class="no-logs">Sin eventos registrados.</p></div>
   </div>
 
@@ -192,9 +209,9 @@ async function checkAuth() {
   const data = await res.json();
   if (data.user.role !== 'admin') { window.location.href = 'login.html'; return; }
 
-  document.getElementById('navUser').textContent     = data.user.username;
-  document.getElementById('sessionUser').textContent = data.user.username;
-  document.getElementById('sessionRole').textContent = data.user.role;
+  document.getElementById('navUser').textContent      = data.user.username;
+  document.getElementById('sessionUser').textContent  = data.user.username;
+  document.getElementById('sessionRole').textContent  = data.user.role;
   document.getElementById('tokenPreview').textContent = token.substring(0, 18) + '...';
 }
 
@@ -222,6 +239,7 @@ async function fetchLogs() {
       let clase = 'log-ok';
       if (log.evento.includes('FAIL') || log.evento.includes('DENIED')) clase = 'log-fail';
       if (log.evento.includes('LOCKOUT')) clase = 'log-warn';
+      if (log.evento.includes('EXFILTRATION') || log.evento.includes('CLEARED') || log.evento.includes('ANOMALOUS')) clase = 'log-alert';
       const hora = new Date(log.timestamp).toLocaleTimeString('es-CO');
       return `
         <div class="log-entry">
@@ -250,28 +268,46 @@ async function fetchIPs() {
       return;
     }
 
-    // Agrupar eventos por IP
     const ipMap = {};
     data.logs.forEach(log => {
-      if (!ipMap[log.ip]) ipMap[log.ip] = { intentos: 0, bloqueada: false, eventos: [] };
+      if (!ipMap[log.ip]) ipMap[log.ip] = { intentos: 0, bloqueada: false, exfiltracion: false, eventos: [] };
       ipMap[log.ip].intentos++;
       if (log.evento.includes('LOCKOUT')) ipMap[log.ip].bloqueada = true;
+      if (log.evento.includes('EXFILTRATION')) ipMap[log.ip].exfiltracion = true;
       ipMap[log.ip].eventos.push(log.evento);
     });
 
     container.innerHTML = Object.entries(ipMap).map(([ip, info]) => `
       <div class="log-entry">
         <span class="ip-address">📍 ${ip}</span>
-        <span class="log-time">Intentos: ${info.intentos}</span>
+        <span class="log-time">Peticiones: ${info.intentos}</span>
         <span class="${info.bloqueada ? 'ip-bloqueada' : 'ip-activa'}">
           ${info.bloqueada ? '🔒 BLOQUEADA' : '✅ Activa'}
         </span>
+        ${info.exfiltracion ? '<span class="log-alert">⚠️ EXFILTRACIÓN DETECTADA</span>' : ''}
         <span class="ip-eventos">${[...new Set(info.eventos)].join(', ')}</span>
       </div>
     `).join('');
-
   } catch(e) {
     console.error('Error cargando IPs:', e);
+  }
+}
+
+async function clearLogs() {
+  const token = sessionStorage.getItem('token');
+  if (!confirm('⚠️ Limpiar logs quedará registrado como LOG_CLEARED.\n\nSegún la guía 5, borrar logs es en sí mismo una señal de ataque.\n\n¿Continuar?')) return;
+
+  try {
+    const res = await fetch('/api/logs', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    alert(data.message);
+    fetchLogs();
+    fetchIPs();
+  } catch(e) {
+    console.error('Error limpiando logs:', e);
   }
 }
 
