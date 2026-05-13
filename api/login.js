@@ -1,16 +1,34 @@
 const bcrypt = require('bcryptjs');
 const { findUser } = require('../lib/users');
 const { generateToken } = require('../lib/auth');
+const { log } = require('../lib/logger');
 
-// Rate limiting en memoria por IP
 const attempts = {};
-const BLOCK_TIME = 30 * 1000; // 30 segundos
+const requestCount = {}; // Para detectar exfiltración
+const BLOCK_TIME = 30 * 1000;
 const MAX_ATTEMPTS = 4;
+const EXFILTRATION_LIMIT = 20; // Más de 20 peticiones por minuto = sospechoso
+const EXFILTRATION_WINDOW = 60 * 1000;
 
-const logger = require('../lib/logger');
-const log = logger.log;
+function checkExfiltration(ip) {
+  const now = Date.now();
+  if (!requestCount[ip]) requestCount[ip] = { count: 0, windowStart: now };
+
+  // Resetear ventana si pasó más de 1 minuto
+  if (now - requestCount[ip].windowStart > EXFILTRATION_WINDOW) {
+    requestCount[ip] = { count: 0, windowStart: now };
+  }
+
+  requestCount[ip].count++;
+
+  if (requestCount[ip].count > EXFILTRATION_LIMIT) {
+    log('EXFILTRATION_ATTEMPT', ip, `peticiones en 1 min: ${requestCount[ip].count} — comportamiento anómalo detectado`);
+    return true;
+  }
+  return false;
+}
+
 module.exports = async (req, res) => {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,13 +38,17 @@ module.exports = async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
   const { username, password } = req.body;
 
+  // Detección de exfiltración / comportamiento anómalo
+  checkExfiltration(ip);
+
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
 
-  // Verificar bloqueo por IP
   const now = Date.now();
-  if (attempts[ip] && attempts[ip].blocked) {
+
+  // Verificar bloqueo por IP
+  if (attempts[ip]?.blocked) {
     if (now - attempts[ip].blockedAt < BLOCK_TIME) {
       log('LOCKOUT_BLOCKED', ip, `user: ${username}`);
       const remaining = Math.ceil((BLOCK_TIME - (now - attempts[ip].blockedAt)) / 1000);
@@ -36,7 +58,6 @@ module.exports = async (req, res) => {
     }
   }
 
-  // Buscar usuario
   const user = findUser(username);
   if (!user) {
     attempts[ip] = attempts[ip] || { count: 0 };
@@ -46,11 +67,11 @@ module.exports = async (req, res) => {
       attempts[ip].blocked = true;
       attempts[ip].blockedAt = now;
       log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
+      return res.status(429).json({ error: 'IP bloqueada. Espera 30 segundos.' });
     }
     return res.status(401).json({ error: 'Credenciales incorrectas' });
   }
 
-  // Verificar contraseña con bcrypt
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
     attempts[ip] = attempts[ip] || { count: 0 };
@@ -60,14 +81,13 @@ module.exports = async (req, res) => {
       attempts[ip].blocked = true;
       attempts[ip].blockedAt = now;
       log('LOCKOUT', ip, `user: ${username} | bloqueado 30s`);
+      return res.status(429).json({ error: 'IP bloqueada. Espera 30 segundos.' });
     }
     return res.status(401).json({ error: 'Credenciales incorrectas' });
   }
 
-  // Login exitoso
   attempts[ip] = { count: 0, blocked: false };
   const token = generateToken(user);
   log('LOGIN_OK', ip, `user: ${username} | role: ${user.role}`);
-
   return res.status(200).json({ token, role: user.role, username: user.username });
 };
